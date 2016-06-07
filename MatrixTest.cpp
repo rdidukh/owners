@@ -25,7 +25,7 @@ bool Matrix::readFromStreamTest()
 	ASSERT_FALSE(matrix.failBit);
 	ASSERT_EQ(1, mtx.size());
 	ASSERT_EQ(1, mtx[0].size());
-	ASSERT_EQ_F(0.5, mtx[0][0], 0.001);
+	ASSERT_FLOAT_EQ(0.5, mtx[0][0], 0.001);
 
 	test("1 2 0.5");
 	ASSERT_TRUE(matrix.failBit);
@@ -40,15 +40,15 @@ bool Matrix::readFromStreamTest()
 	ASSERT_EQ(2, mtx.size());
 	ASSERT_EQ(1, mtx[0].size());
 	ASSERT_EQ(1, mtx[1].size());
-	ASSERT_EQ_F(0.5, mtx[0][0], 0.001);
-	ASSERT_EQ_F(0.7, mtx[1][0], 0.001);
+	ASSERT_FLOAT_EQ(0.5, mtx[0][0], 0.001);
+	ASSERT_FLOAT_EQ(0.7, mtx[1][0], 0.001);
 
 	test("1 2 0.5 0.7");
 	ASSERT_FALSE(matrix.failBit);
 	ASSERT_EQ(1, mtx.size());
 	ASSERT_EQ(2, mtx[0].size());
-	ASSERT_EQ_F(0.5, mtx[0][0], 0.001);
-	ASSERT_EQ_F(0.7, mtx[0][1], 0.001);
+	ASSERT_FLOAT_EQ(0.5, mtx[0][0], 0.001);
+	ASSERT_FLOAT_EQ(0.7, mtx[0][1], 0.001);
 
 	test("3 3 0.1 0.2 0.3   .4 0 0.6   1 0.8 1.0");
 	ASSERT_FALSE(matrix.failBit);
@@ -56,15 +56,15 @@ bool Matrix::readFromStreamTest()
 	ASSERT_EQ(3, mtx[0].size());
 	ASSERT_EQ(3, mtx[1].size());
 	ASSERT_EQ(3, mtx[2].size());
-	ASSERT_EQ_F(0.1, mtx[0][0], 0.001);
-	ASSERT_EQ_F(0.2, mtx[0][1], 0.001);
-	ASSERT_EQ_F(0.3, mtx[0][2], 0.001);
-	ASSERT_EQ_F(0.4, mtx[1][0], 0.001);
-	ASSERT_EQ_F(0.0, mtx[1][1], 0.001);
-	ASSERT_EQ_F(0.6, mtx[1][2], 0.001);
-	ASSERT_EQ_F(1.0, mtx[2][0], 0.001);
-	ASSERT_EQ_F(0.8, mtx[2][1], 0.001);
-	ASSERT_EQ_F(1.0, mtx[2][2], 0.001);
+	ASSERT_FLOAT_EQ(0.1, mtx[0][0], 0.001);
+	ASSERT_FLOAT_EQ(0.2, mtx[0][1], 0.001);
+	ASSERT_FLOAT_EQ(0.3, mtx[0][2], 0.001);
+	ASSERT_FLOAT_EQ(0.4, mtx[1][0], 0.001);
+	ASSERT_FLOAT_EQ(0.0, mtx[1][1], 0.001);
+	ASSERT_FLOAT_EQ(0.6, mtx[1][2], 0.001);
+	ASSERT_FLOAT_EQ(1.0, mtx[2][0], 0.001);
+	ASSERT_FLOAT_EQ(0.8, mtx[2][1], 0.001);
+	ASSERT_FLOAT_EQ(1.0, mtx[2][2], 0.001);
 
 	mtx.push_back(std::vector<double>());
 	iss.clear();

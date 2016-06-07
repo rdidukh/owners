@@ -15,144 +15,71 @@
 #define NO_COLOR	"\033[0m"
 #endif
 
-template<typename U, typename V>
 struct Equal
 {
-    Equal( const U & a, const V & b ) {}
-    bool operator()(const U & a, const V & b)
+    template<typename U, typename V, typename W>
+    bool operator()(const U & a, const V & b, const W &)
     { 
         return a == b;
     }
 };
 
-
-
-template<typename U, typename V, typename Compare>
-bool assert_common(const U & expected, const V & actual, const char * expStr, const char * actStr, const char * file, unsigned line, Compare comp, const char * opposite)
+struct NotEqual
 {
-    bool res = comp(actual, expected);
+	template<typename U, typename V, typename W>
+	bool operator()(const U & a, const V & b, const W &)
+	{
+		return a != b;
+	}
+};
 
-    if(res)
+struct FloatEqual
+{
+	template<class U>
+	bool operator()(const U & a, const U & b, const U& prec)
+	{
+		return std::fabs(a - b) < prec;
+	}
+};
+
+template<typename U, typename V, typename Compare, typename W>
+bool assert_common(const U & expected, const V & actual, const char * expStr, const char * actStr, const char * file, unsigned line, Compare comp, const W & third, const char * opposite, bool detailed)
+{
+    bool res = comp(actual, expected, third);
+
+    if(!res)
     {
-		std::cerr << file << ":" << line << std::endl;
-        std::cerr << RED_COLOR << "FAIL: " << actStr << " " << opposite << " " << expStr << NO_COLOR << std::endl;
-        std::cerr << actStr << ": " << std::endl;
-        std::cerr << "Expected: " << expected << std::endl;
-        std::cerr << "Actual: " << actual << std::endl;
+		std::cout << std::endl;
+		std::cout << file << ":" << line << std::endl;
+        std::cout << RED_COLOR << "FAIL: " << actStr << " " << opposite << " " << expStr << NO_COLOR << std::endl;
+		if(detailed)
+		{
+			std::cout << actStr << ": " << std::endl;
+			std::cout << "Expected: " << expected << std::endl;
+			std::cout << "Actual: " << actual << std::endl;
+		}
         return false;
     }
     else 
     {
-		// std::cout << GREEN_COLOR << "OK: " << actStr << " == " << expStr << NO_COLOR << std::endl;
+		std::cout << GREEN_COLOR << '+' << NO_COLOR;
     }
+
     return true;
 }
 
-#define ASSERT_COMMON(expected, actual, expStr, actStr, comp, opposite, detailed) \
+#define ASSERT_COMMON(expected, actual, expStr, actStr, comp, third, opposite, detailed) \
     do {\
-       bool ret = actual ##comp## expected; \
-       if(!ret) {\
-              std::cerr << __FILE__ << ":" << __LINE__ << std::endl; \
-              std::cerr << RED_COLOR << "FAIL: " << actStr << opposite << expStr << NO_COLOR << std::endl; \
-              if(detailed) { \
-              std::cerr << actStr << ": " << std::endl;           \
-              std::cerr << "Expected: " << expected << std::endl; \
-              std::cerr << "Actual: " << actual << std::endl; \
-                            }\
-              exit(1); \
-                       } \
-        } while(0);
+		bool ret = assert_common(expected, actual, expStr, actStr, __FILE__, __LINE__, comp, third, opposite, detailed); \
+		if(!ret) exit(1); \
+       } while(0);
 
-#define ASSERT_TRUE(x) ASSERT_COMMON(true, x, "TRUE", #x, ==, "!=", false)
-#define ASSERT_FALSE(x) ASSERT_COMMON(false, x, "FALSE", #x, ==, "!=", false)
+#define ASSERT_TRUE(x) ASSERT_COMMON(true, x, "TRUE", #x, Equal(), 0, "!=", false)
+#define ASSERT_FALSE(x) ASSERT_COMMON(false, x, "FALSE", #x, Equal(), 0, "!=", false)
+#define ASSERT_NULL(x) ASSERT_COMMON(NULL, x, "NULL", #x, Equal(), 0, "!=", false)
+#define ASSERT_NOTNULL(x) ASSERT_COMMON(NULL< x, "NULL", #x, NotEqual(), 0, "==", false)
+#define ASSERT_EQ(expected, actual) ASSERT_COMMON(expected, actual, #expected, #actual, Equal(), 0, "!=", true)
+#define ASSERT_FLOAT_EQ(expected, actual, precision) ASSERT_COMMON(expected, actual, #expected, #actual, FloatEqual(), precision, "!=", true)
 
-#if 0
-#define ASSERT_TRUE(x)																	\
-	do {																				\
-		if((x) != true)																	\
-        		{																				\
-			std::cerr << __FILE__ << ":" << __LINE__ << std::endl;						\
-			std::cerr << RED_COLOR << "FAIL: " #x " != TRUE" << NO_COLOR << std::endl;	\
-			exit(1);																	\
-        		} else {																		\
-			std::cout << GREEN_COLOR << "OK: " #x " == TRUE" << NO_COLOR << std::endl;	\
-		}																				\
-    	} while(0);
-
-
-template<typename U>
-void assert_eq_float(const U & expected, const U & actual, const U & precision, const char * expStr, const char * actStr, const char * file, unsigned line)
-{
-    U diff = expected - actual;
-    if(diff < 0)
-        diff = -diff;
-
-    if(diff > precision)
-    {
-		std::cerr << file << ":" << line << std::endl;
-        std::cerr << RED_COLOR << "FAIL: " << actStr << " != " << expStr << " +- " << precision << NO_COLOR << std::endl;
-        std::cerr << actStr << ": " << std::endl;
-        std::cerr << "Expected: " << expected << std::endl;
-        std::cerr << "Actual: " << actual << std::endl;
-        std::cerr << "Precision: " << precision << std::endl;
-        exit(1);
-    }
-    else
-    {
-        std::cout << GREEN_COLOR << "OK: " << actStr << " == " << expStr << " +- " << precision  << NO_COLOR << std::endl; \
-    }
-}
-
-
-
-
-#define ASSERT_NULL(x)																	\
-	do {																				\
-		if((x) != NULL)																	\
-		{																				\
-			std::cerr << __FILE__ << ":" << __LINE__ << std::endl;						\
-			std::cerr << RED_COLOR << "FAIL: " #x " != NULL" << NO_COLOR << std::endl;	\
-			exit(1);																	\
-		} else {																		\
-			std::cout << GREEN_COLOR << "OK: " #x " == NULL" << NO_COLOR << std::endl;	\
-		}																				\
-	} while(0);
-
-#define ASSERT_NOTNULL(x)																\
-	do {																				\
-		if((x) == NULL)																	\
-		{																				\
-			std::cerr << __FILE__ << ":" << __LINE__ << std::endl;						\
-			std::cerr << RED_COLOR << "FAIL: " #x " == NULL" << NO_COLOR << std::endl;	\
-			exit(1);																	\
-		} else {																		\
-			std::cout << GREEN_COLOR << "OK: " #x " != NULL" << NO_COLOR << std::endl;	\
-		}																				\
-	} while(0);
-
-
-
-#define ASSERT_FALSE(x)																	\
-	do {																				\
-		if((x) != false)																\
-		{																				\
-			std::cerr << __FILE__ << ":" << __LINE__ << std::endl;						\
-			std::cerr << RED_COLOR << "FAIL: " #x " != FALSE" << NO_COLOR << std::endl;	\
-			exit(1);																	\
-		} else {																		\
-			std::cout << GREEN_COLOR << "OK: " #x " == FALSE" << NO_COLOR << std::endl;	\
-		}																				\
-	} while(0);
-
-#define ASSERT_EQ(expected, actual) \
-	do {	\
-		assert_eq(expected, actual, #expected, #actual, __FILE__, __LINE__); \
-	} while(0);
-
-#define ASSERT_EQ_F(expected, actual, precision) \
-	do {	\
-		assert_eq_float(expected, actual, precision, #expected, #actual, __FILE__, __LINE__); \
-	} while(0);
-#endif
 
 #endif //TEST_FRAMEWORK_H
