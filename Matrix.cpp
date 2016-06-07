@@ -10,8 +10,8 @@ std::istream & Matrix::readFromStream(std::istream & is)
 {
 	assert(is.good());
 	mtx.clear();
+    failBit = true;
 	unsigned rows, cols;
-	failBit = true;
 
 	is >> rows;
 	if(is.fail())
@@ -48,6 +48,12 @@ Matrix::Matrix(unsigned rows, unsigned cols) :
 {
 }
 
+Matrix::Matrix(unsigned rows, unsigned cols, double defaultValue) :
+mtx(rows, std::vector<double>(cols, defaultValue)),
+failBit(false)
+{
+}
+
 std::vector<double>& Matrix::operator[](size_t index)
 {
 	return mtx[index];
@@ -56,6 +62,22 @@ std::vector<double>& Matrix::operator[](size_t index)
 const std::vector<double>& Matrix::operator[](size_t index) const
 {
 	return mtx[index];
+}
+
+bool Matrix::operator==( const Matrix & rhs ) const
+{
+    if ( rows( ) != rhs.rows( ) ) return false;
+    if ( cols( ) != rhs.cols( ) ) return false;
+
+    unsigned rows = this->rows();
+    unsigned cols = this->cols();
+
+    for ( unsigned r = 0; r < rows; r++ )
+        for ( unsigned c = 0; c < cols; c++ )
+            if ( mtx[ r ][ c ] != rhs.mtx[ r ][ c ] )
+                return false;
+
+    return true;
 }
 
 std::istream & operator >> (std::istream & is, Matrix & matrix)

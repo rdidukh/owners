@@ -1,10 +1,19 @@
 #pragma once
 
+#ifndef TEST_FRAMEWORK_H
+#define TEST_FRAMEWORK_H
+
 #include <iostream>
 
+#ifdef WIN32
+#define RED_COLOR 	""
+#define GREEN_COLOR	""
+#define NO_COLOR	""
+#else
 #define RED_COLOR 	"\033[0;31m"
 #define GREEN_COLOR	"\033[0;32m"
 #define NO_COLOR	"\033[0m"
+#endif
 
 template<typename U, typename V>
 void assert_eq(const U & expected, const V & actual, const char * expStr, const char * actStr, const char * file, unsigned line)
@@ -105,3 +114,5 @@ void assert_eq_float(const U & expected, const U & actual, const U & precision, 
 	do {	\
 		assert_eq_float(expected, actual, precision, #expected, #actual, __FILE__, __LINE__); \
 	} while(0);
+
+#endif //TEST_FRAMEWORK_H

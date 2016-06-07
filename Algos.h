@@ -16,6 +16,7 @@ class BaseAlgo : public Algo
 {
 public:
 	virtual std::string getErrorString();
+    static bool test(Algo & algo);
 protected:
 	void setErrorString(const std::string & str);
 	bool preCheck(const Matrix & mtx);

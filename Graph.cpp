@@ -1,5 +1,6 @@
 #include "Graph.h"
 #include <functional>
+#include <algorithm>
 #include <ctime>
 
 Graph::Graph(const Matrix & mtx)
@@ -19,6 +20,11 @@ Graph::Graph(const Matrix & mtx)
 	for(unsigned i = 0; i < n; i++)
 		for(unsigned j = 0; j < n; j++)
 			graph[i].emplace_back(j, mtx[i][j]);
+}
+
+const std::list<std::pair<int, double>> & Graph::operator[]( size_t index ) const
+{
+    return graph[index];
 }
 
 bool Graph::fail() const
@@ -81,6 +87,8 @@ std::vector<unsigned> Graph::topSort() const
 		if(!visited[i])
 			tsRec(i);
 
+    std::reverse(result.begin(), result.end());
+
 	return result;
 }
 
@@ -88,9 +96,9 @@ Graph Graph::generateDAG(unsigned n, double edgeProb /* = 0.5 */)
 {
 	srand(static_cast<unsigned>(time(NULL)));
 
-	auto randf = [](double limit = 1.0)
+	auto randf = []()
 	{
-		return limit*static_cast<double>(rand())/static_cast<double>(RAND_MAX);
+		return static_cast<double>(rand())/static_cast<double>(RAND_MAX);
 	};
 
 	Matrix mtx(n, n);
@@ -110,9 +118,9 @@ Graph Graph::generateDAG(unsigned n, double edgeProb /* = 0.5 */)
 	{
 		for(unsigned v = 0; v < w; v++)
 		{
-			if(inSum[v] < 1.0 && randf() < edgeProb)
+			if(inSum[v] < 1.0 && edgeProb != 0.0 && randf() <= edgeProb)
 			{
-				double weight = randf(1.0 - inSum[w]);
+                double weight = randf()*(1.0 - inSum[w]);
 				inSum[w] += weight;
 				unsigned from = vec[v];
 				unsigned to = vec[w];
@@ -124,7 +132,8 @@ Graph Graph::generateDAG(unsigned n, double edgeProb /* = 0.5 */)
 	return Graph(mtx);
 }
 
-void Graph::printDAG(const Graph & graph)
+bool Graph::test( )
 {
-	std::vector<unsigned> sorted = graph.topSort();
+
+    return true;
 }

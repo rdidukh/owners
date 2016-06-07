@@ -9,10 +9,12 @@
 class Matrix
 {
 public:
-	Matrix() = delete;
-	Matrix(unsigned rows, unsigned cols);
+	Matrix(unsigned rows = 0, unsigned cols = 0);
+    Matrix(unsigned rows, unsigned cols, double defaultValue);
 
 	std::vector<double> & operator[](size_t index);
+    bool operator==(const Matrix & rhs) const;
+
 	const std::vector<double> & operator[](size_t index) const;
 	friend std::istream & operator >> (std::istream & is, Matrix & matrix);
 	bool fail() const;
@@ -24,7 +26,6 @@ public:
 	std::vector<std::vector<double>>::iterator end();
 	std::vector<std::vector<double>>::const_iterator begin() const;
 	std::vector<std::vector<double>>::const_iterator end() const;
-
 
 	static bool test();
 

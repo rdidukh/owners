@@ -1,6 +1,6 @@
 #include "Algos.h"
 #include "Matrix.h"
-
+#include "TestFramework.h"
 #include <sstream>
 
 bool BaseAlgo::preCheck(const Matrix & mtx)
@@ -56,4 +56,23 @@ void BaseAlgo::setErrorString(const std::string & str)
 std::string BaseAlgo::getErrorString()
 {
 	return errStr;
+}
+
+bool BaseAlgo::test(Algo & algo)
+{
+    std::istringstream iss(""
+    "2 2     "
+    "0.0 1.0 "
+    "0.0 0.0 ");
+
+    Matrix inMtx, outMtx;
+    bool ret;
+
+    iss >> inMtx;
+
+    ret = algo.calculate(inMtx, outMtx);
+    ASSERT_TRUE(ret);
+    ASSERT_TRUE(inMtx == outMtx);
+
+    return true;
 }
