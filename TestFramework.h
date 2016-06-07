@@ -16,22 +16,69 @@
 #endif
 
 template<typename U, typename V>
-void assert_eq(const U & expected, const V & actual, const char * expStr, const char * actStr, const char * file, unsigned line)
+struct Equal
 {
-    if(actual != expected)
+    Equal( const U & a, const V & b ) {}
+    bool operator()(const U & a, const V & b)
+    { 
+        return a == b;
+    }
+};
+
+
+
+template<typename U, typename V, typename Compare>
+bool assert_common(const U & expected, const V & actual, const char * expStr, const char * actStr, const char * file, unsigned line, Compare comp, const char * opposite)
+{
+    bool res = comp(actual, expected);
+
+    if(res)
     {
 		std::cerr << file << ":" << line << std::endl;
-        std::cerr << RED_COLOR << "FAIL: " << actStr << " != " << expStr << NO_COLOR << std::endl;
+        std::cerr << RED_COLOR << "FAIL: " << actStr << " " << opposite << " " << expStr << NO_COLOR << std::endl;
         std::cerr << actStr << ": " << std::endl;
         std::cerr << "Expected: " << expected << std::endl;
         std::cerr << "Actual: " << actual << std::endl;
-        exit(1);
+        return false;
     }
     else 
     {
-		std::cout << GREEN_COLOR << "OK: " << actStr << " == " << expStr << NO_COLOR << std::endl; \
+		// std::cout << GREEN_COLOR << "OK: " << actStr << " == " << expStr << NO_COLOR << std::endl;
     }
+    return true;
 }
+
+#define ASSERT_COMMON(expected, actual, expStr, actStr, comp, opposite, detailed) \
+    do {\
+       bool ret = actual ##comp## expected; \
+       if(!ret) {\
+              std::cerr << __FILE__ << ":" << __LINE__ << std::endl; \
+              std::cerr << RED_COLOR << "FAIL: " << actStr << opposite << expStr << NO_COLOR << std::endl; \
+              if(detailed) { \
+              std::cerr << actStr << ": " << std::endl;           \
+              std::cerr << "Expected: " << expected << std::endl; \
+              std::cerr << "Actual: " << actual << std::endl; \
+                            }\
+              exit(1); \
+                       } \
+        } while(0);
+
+#define ASSERT_TRUE(x) ASSERT_COMMON(true, x, "TRUE", #x, ==, "!=", false)
+#define ASSERT_FALSE(x) ASSERT_COMMON(false, x, "FALSE", #x, ==, "!=", false)
+
+#if 0
+#define ASSERT_TRUE(x)																	\
+	do {																				\
+		if((x) != true)																	\
+        		{																				\
+			std::cerr << __FILE__ << ":" << __LINE__ << std::endl;						\
+			std::cerr << RED_COLOR << "FAIL: " #x " != TRUE" << NO_COLOR << std::endl;	\
+			exit(1);																	\
+        		} else {																		\
+			std::cout << GREEN_COLOR << "OK: " #x " == TRUE" << NO_COLOR << std::endl;	\
+		}																				\
+    	} while(0);
+
 
 template<typename U>
 void assert_eq_float(const U & expected, const U & actual, const U & precision, const char * expStr, const char * actStr, const char * file, unsigned line)
@@ -54,8 +101,10 @@ void assert_eq_float(const U & expected, const U & actual, const U & precision, 
     {
         std::cout << GREEN_COLOR << "OK: " << actStr << " == " << expStr << " +- " << precision  << NO_COLOR << std::endl; \
     }
-
 }
+
+
+
 
 #define ASSERT_NULL(x)																	\
 	do {																				\
@@ -81,17 +130,7 @@ void assert_eq_float(const U & expected, const U & actual, const U & precision, 
 		}																				\
 	} while(0);
 
-#define ASSERT_TRUE(x)																	\
-	do {																				\
-		if((x) != true)																	\
-		{																				\
-			std::cerr << __FILE__ << ":" << __LINE__ << std::endl;						\
-			std::cerr << RED_COLOR << "FAIL: " #x " != TRUE" << NO_COLOR << std::endl;	\
-			exit(1);																	\
-		} else {																		\
-			std::cout << GREEN_COLOR << "OK: " #x " == TRUE" << NO_COLOR << std::endl;	\
-		}																				\
-	} while(0);
+
 
 #define ASSERT_FALSE(x)																	\
 	do {																				\
@@ -114,5 +153,6 @@ void assert_eq_float(const U & expected, const U & actual, const U & precision, 
 	do {	\
 		assert_eq_float(expected, actual, precision, #expected, #actual, __FILE__, __LINE__); \
 	} while(0);
+#endif
 
 #endif //TEST_FRAMEWORK_H
