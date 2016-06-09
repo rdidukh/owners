@@ -27,12 +27,8 @@ public:
 	std::vector<std::vector<double>>::const_iterator begin() const;
 	std::vector<std::vector<double>>::const_iterator end() const;
 
-	static bool test();
-
 private:
 	std::istream & readFromStream(std::istream & is);
-
-	static bool readFromStreamTest();
 
 	/* private members */
 	std::vector<std::vector<double>> mtx;

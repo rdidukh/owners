@@ -2,29 +2,35 @@
 
 #include <string>
 #include <vector>
+#include <cassert>
 
-
-static int bigTestsCounter = 0;
-char bigTestsBuffer[sizeof(bigTests) + 15];
-char * bigTestsBufferPtr = bigTestsBuffer;
-static std::map<std::string, RdBigTest> & bigTests = reinterpret_cast<std::map<std::string, RdBigTest> &>((bigTestsBufferPtr+15)%16);
-
-struct RdBigTestInitialiser
+template<class T>
+T * align_forward(T * addr, unsigned n)
 {
-    RdBigTestInitialiser();
-    ~RdBigTestInitialiser()
-} rdBigTestInitialiser;
+	assert((n&(n - 1)) == 0 && (n != 0));
+	unsigned long ul = reinterpret_cast<unsigned long>(addr);
+	return reinterpret_cast<T*>((ul + n - 1) % n);
+}
+
+int pluses = 0;
+static int bigTestsCounter = 0;
+static RdBigTestMap * bigTests = NULL;
 
 RdBigTestInitialiser::RdBigTestInitialiser()
 {
-    if(bigTestsCounter++ == 0)
-        new( &bigTests ) std::map<std::string, RdBigTest>( );
+	if(bigTestsCounter++ == 0)
+	{
+		pluses = 0;
+		bigTests = new RdBigTestMap();
+	}
 }
 
 RdBigTestInitialiser::~RdBigTestInitialiser()
 {
-    if(--bigTestsCounter == 0)
-        (&bigTests)->~std::map<std::string, RdBigTest>();
+	if(--bigTestsCounter == 0)
+	{
+		delete bigTests;
+	}
 }
 
 void addLittleTest(const std::string & name, RdLittleTest * littleTest)
@@ -34,9 +40,9 @@ void addLittleTest(const std::string & name, RdLittleTest * littleTest)
 
 RdBigTest & getBigTest(const std::string & name)
 {
-    if(bigTests.find(name) == bigTests.end())
-        bigTests.insert(make_pair(name, RdBigTest(name)));
-    return bigTests.find(name)->second;
+    if(bigTests->find(name) == bigTests->end())
+        bigTests->insert(make_pair(name, RdBigTest(name)));
+    return bigTests->find(name)->second;
 }
 
 RdLittleTest::RdLittleTest(const std::string & className, const std::string & testName):name(testName)
@@ -55,7 +61,7 @@ void RdBigTest::addLittleTest(RdLittleTest * littleTest)
 
 void RdBigTest::runAll()
 {
-    for(std::map<std::string, RdBigTest>::iterator it = bigTests.begin(); it != bigTests.end(); ++it)
+    for(std::map<std::string, RdBigTest>::iterator it = bigTests->begin(); it != bigTests->end(); ++it)
         it->second.run();
 }
 
@@ -69,21 +75,21 @@ void RdBigTest::run()
         littleTest.run();
         if(littleTest.ok)
         {
-            std::cout << GREEN_COLOR << name << "::" << littleTest.name << "   OK" << NO_COLOR << '\n';
+            cout() << GREEN_COLOR << name << "::" << littleTest.name << "   OK" << NO_COLOR << '\n';
             ok++;
         }
         else
         {
-            std::cout << RED_COLOR << name << "::" << littleTest.name << "   FAILED" << NO_COLOR << '\n';
+            cout() << RED_COLOR << name << "::" << littleTest.name << "   FAILED" << NO_COLOR << '\n';
             fail++;
         }
     }
     if(fail > 0)
     {
-        std::cout << RED_COLOR << name << ": " << fail << " FAILED out of " << (ok+fail) << NO_COLOR << '\n';
+        cout() << RED_COLOR << name << ": " << fail << " out of " << (ok+fail) << "FAILED" << NO_COLOR << '\n';
     }
     else
     {
-        std::cout << GREEN_COLOR << name << ": " << "ALL " << ok << " OK" << NO_COLOR << '\n';
+        cout() << GREEN_COLOR << name << ": " << ok << " out of " << ok << " OK" << NO_COLOR << '\n';
     }
 }

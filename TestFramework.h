@@ -22,8 +22,18 @@
 struct RdLittleTest;
 class RdBigTest;
 
-extern std::map<std::string, RdBigTest> bigTests;
-extern int bigTestsCounter;
+extern int pluses;
+static std::ostream & cout()
+{
+	if(pluses != 0)
+	{
+		pluses = 0;
+		std::cout << '\n';
+	}
+	return std::cout;
+}
+
+typedef std::map<std::string, RdBigTest> RdBigTestMap;
 
 RdBigTest & getBigTest(const std::string & name);
 void addLittleTest(const std::string & name, RdLittleTest * littleTest);
@@ -46,6 +56,13 @@ public:
     static void runAll();
     void run();
 };
+
+
+static struct RdBigTestInitialiser
+{
+	RdBigTestInitialiser();
+	~RdBigTestInitialiser();
+} rdBigTestInitialiser;
 
 #define TEST(className, testName) \
 struct className##_##testName##_Test : RdLittleTest \
@@ -93,19 +110,24 @@ bool assert_common(const U & expected, const V & actual, const char * expStr, co
 
     if(!res)
     {
-		std::cout << std::endl;
-		std::cout << file << ":" << line << std::endl;
-        std::cout << RED_COLOR << "FAIL: " << actStr << " " << opposite << " " << expStr << NO_COLOR << std::endl;
+		cout() << file << ":" << line << '\n';
+        cout() << RED_COLOR << "FAIL: " << actStr << " " << opposite << " " << expStr << NO_COLOR << '\n';
 		if(detailed)
 		{
-			std::cout << actStr << ": " << std::endl;
-			std::cout << "Expected: " << expected << std::endl;
-			std::cout << "Actual: " << actual << std::endl;
+			cout() << actStr << ": " << '\n';
+			cout() << "Expected: " << expected << '\n';
+			cout() << "Actual: " << actual << '\n';
 		}
         return false;
     }
     else 
     {
+		pluses++;
+		if(pluses == 5)
+		{
+			pluses = 0;
+			std::cout << '\n';
+		}
 		std::cout << GREEN_COLOR << '+' << NO_COLOR;
     }
 
