@@ -4,6 +4,10 @@
 #define TEST_FRAMEWORK_H
 
 #include <iostream>
+#include <string>
+#include <map>
+#include <algorithm>
+#include <vector>
 
 #ifdef WIN32
 #define RED_COLOR 	""
@@ -14,6 +18,46 @@
 #define GREEN_COLOR	"\033[0;32m"
 #define NO_COLOR	"\033[0m"
 #endif
+
+struct RdLittleTest;
+class RdBigTest;
+
+extern std::map<std::string, RdBigTest> bigTests;
+extern int bigTestsCounter;
+
+RdBigTest & getBigTest(const std::string & name);
+void addLittleTest(const std::string & name, RdLittleTest * littleTest);
+
+struct RdLittleTest
+{
+    RdLittleTest(const std::string & className, const std::string & testName);
+    virtual void run()=0;
+    std::string name;
+    bool ok;
+};
+
+class RdBigTest
+{
+    std::vector<RdLittleTest *> littleTests;
+    std::string name;
+public:
+    RdBigTest(const std::string & className);
+    void addLittleTest(RdLittleTest * littleTest);
+    static void runAll();
+    void run();
+};
+
+#define TEST(className, testName) \
+struct className##_##testName##_Test : RdLittleTest \
+{\
+    className##_##testName##_Test(const char * a, const char * b):RdLittleTest(a, b) {} \
+    void run(); \
+}; \
+static className##_##testName##_Test className##_##testName##_TestObj(#className, #testName);  \
+void className##_##testName##_Test::run()
+
+#define RUN_ALL_TESTS() \
+    RdBigTest::runAll();
 
 struct Equal
 {
@@ -70,8 +114,12 @@ bool assert_common(const U & expected, const V & actual, const char * expStr, co
 
 #define ASSERT_COMMON(expected, actual, expStr, actStr, comp, third, opposite, detailed) \
     do {\
-		bool ret = assert_common(expected, actual, expStr, actStr, __FILE__, __LINE__, comp, third, opposite, detailed); \
-		if(!ret) exit(1); \
+        bool ret = assert_common(expected, actual, expStr, actStr, __FILE__, __LINE__, comp, third, opposite, detailed); \
+        if(!ret) \
+        { \
+            this->ok = false; \
+            return; \
+        } \
        } while(0);
 
 #define ASSERT_TRUE(x) ASSERT_COMMON(true, x, "TRUE", #x, Equal(), 0, "!=", false)

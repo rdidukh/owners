@@ -153,6 +153,7 @@
     <ClCompile Include="MatrixTest.cpp" />
     <ClCompile Include="RecursionAlgo.cpp" />
     <ClCompile Include="Test.cpp" />
+    <ClCompile Include="TestFramework.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Algos.h" />
